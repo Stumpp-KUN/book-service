@@ -25,7 +25,7 @@ CREATE TABLE product_genre (
        CONSTRAINT fk_product_genre_genre FOREIGN KEY (genre_id) REFERENCES genre(id)
 );
 
-CREATE TABLE "order" (
+CREATE TABLE orders (
      id BIGSERIAL PRIMARY KEY,
      currency VARCHAR(10)
 );
@@ -35,6 +35,6 @@ CREATE TABLE order_product (
        order_id BIGINT NOT NULL,
        product_id BIGINT NOT NULL,
        converted_price DECIMAL(10,2),
-       CONSTRAINT fk_order_product_order FOREIGN KEY (order_id) REFERENCES "order"(id),
+       CONSTRAINT fk_order_product_order FOREIGN KEY (order_id) REFERENCES orders(id),
        CONSTRAINT fk_order_product_product FOREIGN KEY (product_id) REFERENCES product(id)
 );

@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.order.bookservice.dto.OrderResponse;
 import org.order.bookservice.dto.ProductRequest;
 import org.order.bookservice.dto.ProductResponse;
+import org.order.bookservice.entity.Order;
 import org.order.bookservice.entity.OrderProduct;
+import org.order.bookservice.entity.Product;
 import org.order.bookservice.mapper.ProductMapper;
+import org.order.bookservice.repository.OrderRepository;
 import org.order.bookservice.repository.ProductRepository;
 import org.order.bookservice.utils.CurrencyConverter;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +18,9 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +28,7 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
     private final ProductMapper productMapper;
     private final CurrencyConverter currencyConverter;
 
@@ -42,13 +48,25 @@ public class ProductService {
     public OrderResponse makeOrder(ProductRequest request) {
         var products = productRepository.findAllById(request.productIds());
 
-        BigDecimal totalPrice = products.stream()
-                .map(product -> {
-                    var finalPrice = currencyConverter.convert(product.getPrice(), product.getCurrency(), request.currency());
-                    return finalPrice;
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        Order order = new Order();
+        order.setCurrency(request.currency());
 
-        return new OrderResponse(null, request.currency(), totalPrice.setScale(2, BigDecimal.ROUND_HALF_UP));
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        Set<OrderProduct> orderProducts = new HashSet<>();
+        for (Product product : products) {
+            BigDecimal convertedPrice = currencyConverter.convert(product.getPrice(), product.getCurrency(), request.currency());
+
+            OrderProduct orderProduct = new OrderProduct();
+            orderProduct.setOrder(order);
+            orderProduct.setProduct(product);
+            orderProduct.setConvertedPrice(convertedPrice);
+
+            orderProducts.add(orderProduct);
+            totalPrice = totalPrice.add(convertedPrice);
+        }
+        order.setOrderProducts(orderProducts);
+        order = orderRepository.save(order);
+
+        return new OrderResponse(order.getId(), request.currency(), totalPrice.setScale(2, BigDecimal.ROUND_HALF_UP));
     }
 }
