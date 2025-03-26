@@ -1,0 +1,19 @@
+spring:
+  cache:
+    type: caffeine
+  datasource:
+    url: jdbc:postgresql://localhost:5442/shop_db
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yml
+
+api:
+  nbrb:
+    rates: https://api.nbrb.by/exrates/rates?periodicity=0
