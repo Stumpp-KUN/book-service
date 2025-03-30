@@ -21,8 +21,7 @@ public interface ProductMapper {
 
     default String getFirstGenre(Product product) {
         return product.getGenres().stream()
-                .findFirst()
                 .map(Genre::getName)
-                .orElse(null);
+                .findAny().orElse(null);
     }
 }

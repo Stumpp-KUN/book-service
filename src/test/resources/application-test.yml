@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${TESTCONTAINERS_HOST:localhost}:${POSTGRES_PORT:5442}/shop_db
+    username: admin
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+api:
+  nbrb:
+    rates: http://localhost:8091/exrates/rates?periodicity=0
